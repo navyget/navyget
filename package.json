@@ -1,0 +1,23 @@
+{
+  "name": "navyget",
+  "version": "1.0.0",
+  "description": "A search engine/Social media/e-commerce hybrid app",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/navyget/navyget.git"
+  },
+  "author": "kevin tumbo",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/navyget/navyget/issues"
+  },
+  "homepage": "https://github.com/navyget/navyget#readme",
+  "dependencies": {
+    "mongoose": "^5.5.12",
+    "nodemon": "^1.19.1"
+  }
+}

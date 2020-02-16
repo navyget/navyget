@@ -1,29 +1,29 @@
 import mongoose from 'mongoose';
 
-const ItemSchema = mongoose.Schema({
-  item_name: {
+const ProductSchema = mongoose.Schema({
+  product_name: {
     type: String,
     required: true,
     trim: true,
   },
-  item_price: {
+  product_price: {
     type: Number,
     required: true,
   },
-  item_description: {
+  product_description: {
     type: String,
     required: true,
     trim: true,
   },
-  item_category: {
+  product_category: {
     type: String,
     required: true,
   },
-  item_subcategory: {
+  product_subcategory: {
     type: String,
     required: true,
   },
-  item_attributes: [{
+  product_attributes: [{
     attribute_name: {
       type: String,
       required: true,
@@ -62,20 +62,20 @@ const ItemSchema = mongoose.Schema({
 // update update_at on creation.
 
 // eslint-disable-next-line func-names
-ItemSchema.pre('save', function (next) {
-  const item = this;
+ProductSchema.pre('save', function (next) {
+  const product = this;
   const currentDate = new Date();
-  item.updated_at = currentDate;
+  product.updated_at = currentDate;
   next();
 });
 
 // eslint-disable-next-line func-names
-ItemSchema.pre('findOneAndUpdate', function (next) {
-  const item = this;
-  item.update({}, { $set: { updated_at: new Date() } });
+ProductSchema.pre('findOneAndUpdate', function (next) {
+  const product = this;
+  product.update({}, { $set: { updated_at: new Date() } });
   next();
 });
 
-const Items = mongoose.model('Items', ItemSchema);
+const Product = mongoose.model('Product', ProductSchema);
 
-export default Items;
+export default Product;

@@ -1,29 +1,29 @@
 import mongoose from 'mongoose';
 
-const ServiceSchema = mongoose.Schema({
-	service_name: {
+const ProductSchema = mongoose.Schema({
+	product_name: {
 		type: String,
 		required: true,
 		trim: true
 	},
-	service_price: {
+	product_price: {
 		type: Number,
 		required: true
 	},
-	service_description: {
+	product_description: {
 		type: String,
 		required: true,
 		trim: true
 	},
-	service_category: {
+	product_category: {
 		type: String,
 		required: true
 	},
-	service_subcategory: {
+	product_subcategory: {
 		type: String,
 		required: true
 	},
-	service_attributes: [
+	product_attributes: [
 		{
 			attribute_name: {
 				type: String,
@@ -35,6 +35,10 @@ const ServiceSchema = mongoose.Schema({
 			}
 		}
 	],
+	availability: {
+		type: Boolean,
+		required: true
+	},
 	published: {
 		type: Boolean,
 		required: true
@@ -57,25 +61,23 @@ const ServiceSchema = mongoose.Schema({
 	}
 });
 
-// update update_at on creation
+// update update_at on creation.
 
-/* eslint-disable-next-line */
-ServiceSchema.pre('save', function (next) {
-	const service = this;
+// eslint-disable-next-line func-names
+ProductSchema.pre('save', function (next) {
+	const product = this;
 	const currentDate = new Date();
-	service.updated_at = currentDate;
+	product.updated_at = currentDate;
 	next();
 });
 
-// update update_at on update
-
-/* eslint-disable-next-line */
-ServiceSchema.pre('findOneAndUpdate', function (next) {
-	const service = this;
-	service.update({}, { $set: { updated_at: new Date() } });
+// eslint-disable-next-line func-names
+ProductSchema.pre('findOneAndUpdate', function (next) {
+	const product = this;
+	product.update({}, { $set: { updated_at: new Date() } });
 	next();
 });
 
-const Services = mongoose.model('Services', ServiceSchema);
+const Product = mongoose.model('Product', ProductSchema);
 
-export default Services;
+export default Product;

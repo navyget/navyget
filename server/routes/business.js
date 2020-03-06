@@ -1,9 +1,7 @@
 import express from 'express';
-import { objectID, ObjectID } from 'mongodb';
+import { ObjectID } from 'mongodb';
 import * as _ from 'lodash';
 import Businesses from '../models/business';
-import Products from '../models/products';
-import Services from '../models/services';
 
 const router = express.Router();
 
@@ -120,3 +118,5 @@ router.delete('/business/:businessId', authenticate, async (req, res) => {
 		return res.send(e);
 	}
 });
+
+module.exports = router;

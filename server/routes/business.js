@@ -5,27 +5,6 @@ import Businesses from '../models/business';
 
 const router = express.Router();
 
-// POST method route
-// business role can create a business (private)
-router.post('/business', async (req, res) => {
-	const businessBody = _.pick(req.body, [
-		'business_name',
-		'business_type',
-		'business_description',
-		'business_category',
-		'business_subcategory',
-		'location',
-		'_business_admin'
-	]);
-	const business = new Businesses(businessBody);
-	try {
-		const createdBusiness = await business.save();
-		return res.send({ createdBusiness });
-	} catch (e) {
-		return res.status(400).send(e);
-	}
-});
-
 // GET method route
 // Can view particular business profile (public)
 // to-do: get business with owner privilege
@@ -119,4 +98,4 @@ router.delete('/business/:businessId', authenticate, async (req, res) => {
 	}
 });
 
-module.exports = router;
+export default router;

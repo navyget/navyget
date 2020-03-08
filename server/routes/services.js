@@ -8,7 +8,7 @@ const router = express.Router();
 
 // POST method route
 // business role can create a service (private)
-router.post('/:businessId/service/create', authenticate, async (req, res) => {
+router.post('/:businessId/create', authenticate, async (req, res) => {
 	const { businessId } = req.params;
 	const businessAdmin = req.user._id;
 	const body = _.pick(req.body, [
@@ -62,7 +62,7 @@ router.post('/:businessId/service/create', authenticate, async (req, res) => {
 
 // GET method route
 // View service from store (public)
-router.get('/:businessId/service/:serviceId', async (req, res) => {
+router.get('/:businessId/:serviceId', async (req, res) => {
 	const { businessId, serviceId } = req.params;
 	if (!ObjectId.isValid(businessId) || !ObjectId.isValid(serviceId)) {
 		return res.status(404).send();
@@ -85,87 +85,79 @@ router.get('/:businessId/service/:serviceId', async (req, res) => {
 
 // EDIT method route
 // Business can update a service (private)
-router.patch(
-	'/:businessId/service/:serviceId',
-	authenticate,
-	async (req, res) => {
-		const { businessId, serviceId } = req.params;
-		const businessAdmin = req.user._id;
-		const body = _.pick(req.body, [
-			'service_name',
-			'service_price',
-			'service_description',
-			'service_category',
-			'service_subcategory',
-			'service_attributes',
-			'availability',
-			'published'
-		]);
-		if (req.account !== 'business account') {
-			return res.status().send({ message: 'Unauthorized account' });
-		}
-		if (!ObjectId.isValid(businessId) || !ObjectId.isValid(serviceId)) {
-			return res.status(404).send();
-		}
-		try {
-			const service = await Services.findOneAndUpdate(
-				{
-					_businessId: businessId,
-					_id: serviceId,
-					_businessAdmin: businessAdmin
-				},
-				{ $set: body },
-				{ new: true }
-			);
-			if (!service) {
-				return res.status(404).send({
-					message: 'Service does not exist.'
-				});
-			}
-			return res.send({
-				service,
-				message: 'Service has been successfully updated'
-			});
-		} catch (e) {
-			return res.send(e);
-		}
+router.patch('/:businessId/:serviceId', authenticate, async (req, res) => {
+	const { businessId, serviceId } = req.params;
+	const businessAdmin = req.user._id;
+	const body = _.pick(req.body, [
+		'service_name',
+		'service_price',
+		'service_description',
+		'service_category',
+		'service_subcategory',
+		'service_attributes',
+		'availability',
+		'published'
+	]);
+	if (req.account !== 'business account') {
+		return res.status().send({ message: 'Unauthorized account' });
 	}
-);
-
-// Delete method Route
-// Business role can delete service (private)
-router.delete(
-	'/:businessId/service/:serviceId',
-	authenticate,
-	async (req, res) => {
-		const { businessId, serviceId } = req.params;
-		const businessAdmin = req.user._id;
-		if (req.account !== 'business account') {
-			return res.status().send({ message: 'Unauthorized account' });
-		}
-		if (!ObjectId.isValid(businessId) || !ObjectId.isValid(serviceId)) {
-			return res.status(404).send();
-		}
-		try {
-			const service = await Services.findByIdAndDelete({
+	if (!ObjectId.isValid(businessId) || !ObjectId.isValid(serviceId)) {
+		return res.status(404).send();
+	}
+	try {
+		const service = await Services.findOneAndUpdate(
+			{
 				_businessId: businessId,
 				_id: serviceId,
 				_businessAdmin: businessAdmin
+			},
+			{ $set: body },
+			{ new: true }
+		);
+		if (!service) {
+			return res.status(404).send({
+				message: 'Service does not exist.'
 			});
-			if (!service) {
-				return res.status(404).send({
-					message: 'Service does not exist.'
-				});
-			}
-			return res.send({
-				service,
-				message: 'Service has been successfully updated'
-			});
-		} catch (e) {
-			return res.send(e);
 		}
+		return res.send({
+			service,
+			message: 'Service has been successfully updated'
+		});
+	} catch (e) {
+		return res.send(e);
 	}
-);
+});
+
+// Delete method Route
+// Business role can delete service (private)
+router.delete('/:businessId/:serviceId', authenticate, async (req, res) => {
+	const { businessId, serviceId } = req.params;
+	const businessAdmin = req.user._id;
+	if (req.account !== 'business account') {
+		return res.status().send({ message: 'Unauthorized account' });
+	}
+	if (!ObjectId.isValid(businessId) || !ObjectId.isValid(serviceId)) {
+		return res.status(404).send();
+	}
+	try {
+		const service = await Services.findByIdAndDelete({
+			_businessId: businessId,
+			_id: serviceId,
+			_businessAdmin: businessAdmin
+		});
+		if (!service) {
+			return res.status(404).send({
+				message: 'Service does not exist.'
+			});
+		}
+		return res.send({
+			service,
+			message: 'Service has been successfully updated'
+		});
+	} catch (e) {
+		return res.send(e);
+	}
+});
 
 // GET method route
 // View all Services in the business (public)

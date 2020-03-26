@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 
-const ServiceSchema = mongoose.Schema({
+const ServiceSchema = new mongoose.Schema({
 	service_name: {
 		type: String,
 		required: true,
@@ -69,8 +69,7 @@ ServiceSchema.pre('save', function (next) {
 
 // update update_at on update
 
-/* eslint-disable-next-line */
-ServiceSchema.pre('findOneAndUpdate', function (next) {
+ServiceSchema.pre('findOneAndUpdate', function(next) {
 	const service = this;
 	service.update({}, { $set: { updated_at: new Date() } });
 	next();

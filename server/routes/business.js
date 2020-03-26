@@ -2,6 +2,7 @@ import express from 'express';
 import { ObjectID } from 'mongodb';
 import * as _ from 'lodash';
 import Businesses from '../models/business';
+import authenticate from '../middleware/authenticate';
 
 const router = express.Router();
 

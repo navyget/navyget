@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 
-const BusinessSchema = mongoose.Schema({
+const BusinessSchema = new mongoose.Schema({
 	business_name: {
 		type: String,
 		required: true,

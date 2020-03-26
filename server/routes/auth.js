@@ -1,5 +1,6 @@
 import express from 'express';
 import * as _ from 'lodash';
+import authenticate from '../middleware/authenticate';
 import { Users, Businesses } from '../models';
 
 const router = express.Router();
@@ -15,8 +16,7 @@ router.post('/user/register', async (req, res) => {
 		'username',
 		'email_address',
 		'password',
-		'account_type',
-		'role'
+		'account_type'
 	]);
 	if (body.account_type !== 'normal_user') {
 		return res.status(403).send({
@@ -46,8 +46,7 @@ router.post('/business/register', async (req, res) => {
 		'username',
 		'email_address',
 		'password',
-		'account_type',
-		'role'
+		'account_type'
 	]);
 	const businessBody = _.pick(req.body, [
 		'business_name',
@@ -59,7 +58,7 @@ router.post('/business/register', async (req, res) => {
 		'_business_admin'
 	]);
 
-	if (userBody.account_type !== 'business account') {
+	if (userBody.account_type !== 'business_account') {
 		return res
 			.status(403)
 			.send({ message: 'Please Select business account as account type.' });
@@ -90,8 +89,8 @@ router.post('/business/register', async (req, res) => {
 // POST method route
 // Log in to account (public) {email/password}
 router.post('/login', async (req, res) => {
-	const body = _.pick(req.body, ['email_address', 'password']);
 	try {
+		const body = _.pick(req.body, ['email_address', 'password']);
 		const user = await Users.findByCredentials(
 			body.emailAddress,
 			body.password
@@ -108,13 +107,13 @@ router.post('/login', async (req, res) => {
 
 // DELETE method route
 // Logout a user from the account(public)
-router.delete('/logout', authenticate, (req, res) => {
+router.delete('/logout', authenticate, async (req, res) => {
 	const { token, user } = req;
 	try {
-		user.removeToken(token);
+		await user.removeToken(token);
 		return res.send({
 			message: 'You have been successfully logged out.'
-		})
+		});
 	} catch (e) {
 		return res.status(400).send(e);
 	}

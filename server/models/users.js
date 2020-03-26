@@ -5,7 +5,7 @@ import bcrypt from 'bcryptjs';
 
 const _ = require('lodash');
 
-const UserSchema = mongoose.Schema({
+const UserSchema = new mongoose.Schema({
 	first_name: {
 		type: String,
 		required: true,
@@ -89,8 +89,6 @@ const UserSchema = mongoose.Schema({
 	}
 });
 
-/* eslint no-underscore-dangle: ["error", { "allow": ["_id"] }] */
-
 // pick out user information
 // eslint-disable-next-line func-names
 UserSchema.methods.toJson = function() {
@@ -103,34 +101,36 @@ UserSchema.methods.toJson = function() {
 		'date_of_birth',
 		'username',
 		'email_address',
-		'account_type',
-		'role'
+		'account_type'
 	]);
 };
 
 // Generate Authentication Token
 // eslint-disable-next-line func-names
-UserSchema.methods.generateAuthToken = function() {
-	const user = this;
-	const access = 'auth';
-	const token = jwt
-		.sign(
-			{
-				_id: user._id.toHexString(),
-				account: user.account_type,
-				role: user.role,
-				access
-			},
-			process.env.JWT_SECRET
-		)
-		.toString();
+UserSchema.methods.generateAuthToken = async function() {
+	try {
+		const user = this;
+		const access = 'auth';
+		const token = jwt
+			.sign(
+				{
+					_id: user._id.toHexString(),
+					account: user.account_type,
+					access
+				},
+				process.env.JWT_SECRET
+			)
+			.toString();
 
-	user.tokens = user.tokens.concat([{ access, token }]);
+		user.tokens = user.tokens.concat([{ access, token }]);
 
-	const currentDate = new Date();
-	user.last_login = currentDate;
-
-	return user.save().then(() => token);
+		const currentDate = new Date();
+		user.last_login = currentDate;
+		await user.save();
+		return token;
+	} catch (e) {
+		throw new Error(e);
+	}
 };
 
 // Remove authentication token
@@ -149,67 +149,53 @@ UserSchema.methods.removeToken = function(token) {
 
 // find user using token
 // eslint-disable-next-line func-names
-UserSchema.statics.findByToken = function(token) {
+UserSchema.statics.findByToken = async function(token) {
 	const User = this;
 	let decoded;
 
 	try {
-		decoded = jwt.verify(token, process.env.JWT_SECRET);
+		decoded = await jwt.verify(token, process.env.JWT_SECRET);
+		return User.findOne({
+			_id: decoded._id,
+			account_type: decoded.account,
+			'tokens.access': 'auth',
+			'tokens.token': token
+		});
 	} catch (e) {
-		return Promise.reject(e);
+		return e;
 	}
-
-	return User.findOne({
-		_id: decoded._id,
-		account_type: decoded.account,
-		'tokens.access': 'auth',
-		'tokens.token': token
-	});
 };
 
 // find user by credentials
 // eslint-disable-next-line func-names
-UserSchema.statics.findByCredentials = function(email, password) {
-	const User = this;
+UserSchema.statics.findByCredentials = async (email, password) => {
+	const user = await Users.findOne({ email });
 
-	return User.findOne({ email }).then(user => {
-		if (!user) {
-			return Promise.reject();
-		}
+	if (!user) {
+		throw new Error('Unable to find user');
+	}
+	const isMatch = await bcrypt.compare(password, user.password);
 
-		return new Promise((resolve, reject) => {
-			bcrypt.compare(password, user.password, (err, res) => {
-				if (res) {
-					resolve(user);
-				} else {
-					reject(err);
-				}
-			});
-		});
-	});
+	if (!isMatch) {
+		throw new Error('incorrect email or password.');
+	}
+
+	return user;
 };
 
 // hash user password before saving
 // eslint-disable-next-line func-names
-UserSchema.pre('save', function(next) {
+UserSchema.pre('save', async function(next) {
 	const user = this;
 
 	const currentDate = new Date();
 	user.updated_at = currentDate;
 
 	if (user.isModified('password')) {
-		bcrypt.genSalt(10, (err, salt) => {
-			bcrypt.hash(user.password, salt, hash => {
-				if (err) {
-					return err;
-				}
-				user.password = hash;
-				next();
-			});
-		});
-	} else {
-		next();
+		user.password = await bcrypt.hash(user.password, 8);
+		return next();
 	}
+	return next();
 });
 
 const Users = mongoose.model('Users', UserSchema);

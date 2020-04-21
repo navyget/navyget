@@ -169,8 +169,7 @@ UserSchema.statics.findByToken = async function(token) {
 // find user by credentials
 // eslint-disable-next-line func-names
 UserSchema.statics.findByCredentials = async (email, password) => {
-	const user = await Users.findOne({ email });
-
+	const user = await Users.findOne({ email_address: email });
 	if (!user) {
 		throw new Error('Unable to find user');
 	}

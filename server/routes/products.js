@@ -22,16 +22,17 @@ router.post('/:businessId/create', authenticate, async (req, res) => {
 		'availability',
 		'published'
 	]);
-	if (!ObjectId.isValid(businessId)) {
-		return res.status(404).send({
-			message: 'Invalid business Id'
-		});
-	}
-	if (req.account !== 'business account') {
-		return res.status().send({ message: 'Unauthorized account' });
-	}
-	const business = await Businesses.findById(businessId);
 	try {
+		if (!ObjectId.isValid(businessId)) {
+			return res.status(404).send({
+				message: 'Invalid business Id'
+			});
+		}
+		if (req.account !== 'business_account') {
+			return res.status(403).send({ message: 'Unauthorized account' });
+		}
+		const business = await Businesses.findById(businessId);
+
 		if (!business) {
 			return res.status(404).send({ message: 'Business does not exist' });
 		}
@@ -57,7 +58,7 @@ router.post('/:businessId/create', authenticate, async (req, res) => {
 			message: 'You have successfully created the product'
 		});
 	} catch (e) {
-		return res.send(e);
+		return res.status(400).send(e);
 	}
 });
 
@@ -99,13 +100,13 @@ router.patch('/:businessId/:productId', authenticate, async (req, res) => {
 		'availability',
 		'published'
 	]);
-	if (req.account !== 'business account') {
-		return res.status().send({ message: 'Unauthorized account' });
-	}
-	if (!ObjectId.isValid(businessId) || !ObjectId.isValid(productId)) {
-		return res.status(404).send();
-	}
 	try {
+		if (req.account !== 'business_account') {
+			return res.status(403).send({ message: 'Unauthorized account' });
+		}
+		if (!ObjectId.isValid(businessId) || !ObjectId.isValid(productId)) {
+			return res.status(404).send();
+		}
 		const product = await Products.findOneAndUpdate(
 			{
 				_businessId: businessId,
@@ -134,13 +135,13 @@ router.patch('/:businessId/:productId', authenticate, async (req, res) => {
 router.delete('/:businessId/:productId', authenticate, async (req, res) => {
 	const { businessId, productId } = req.params;
 	const businessAdmin = req.user._id;
-	if (req.account !== 'business account') {
-		return res.status().send({ message: 'Unauthorized account' });
-	}
-	if (!ObjectId.isValid(businessId) || !ObjectId.isValid(productId)) {
-		return res.status(404).send();
-	}
 	try {
+		if (req.account !== 'business_account') {
+			return res.status(403).send({ message: 'Unauthorized account' });
+		}
+		if (!ObjectId.isValid(businessId) || !ObjectId.isValid(productId)) {
+			return res.status(404).send();
+		}
 		const product = await Products.findByIdAndDelete({
 			_businessId: businessId,
 			_id: productId,
@@ -153,7 +154,7 @@ router.delete('/:businessId/:productId', authenticate, async (req, res) => {
 		}
 		return res.send({
 			product,
-			message: 'Product has been successfully updated'
+			message: 'Product has been successfully deleted'
 		});
 	} catch (e) {
 		return res.send(e);
@@ -162,12 +163,12 @@ router.delete('/:businessId/:productId', authenticate, async (req, res) => {
 
 // GET method route
 // View all Products in the business (public)
-router.get('/:businessId/products', async (req, res) => {
+router.get('/:businessId', async (req, res) => {
 	const { businessId } = req.params;
-	if (!ObjectId.isValid(businessId)) {
-		return res.status(404).send();
-	}
 	try {
+		if (!ObjectId.isValid(businessId)) {
+			return res.status(404).send();
+		}
 		const products = await Products.find({
 			_businessId: businessId
 		});

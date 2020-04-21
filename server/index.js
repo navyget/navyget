@@ -6,7 +6,7 @@ import productsRoutes from './routes/products';
 import servicesRoutes from './routes/services';
 import mongoose from './db/mongoose';
 
-require('dotenv').config()
+require('dotenv').config();
 
 const app = express();
 const port = process.env.PORT || 3000;

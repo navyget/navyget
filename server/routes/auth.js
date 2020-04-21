@@ -92,9 +92,10 @@ router.post('/login', async (req, res) => {
 	try {
 		const body = _.pick(req.body, ['email_address', 'password']);
 		const user = await Users.findByCredentials(
-			body.emailAddress,
+			body.email_address,
 			body.password
 		);
+
 		const token = await user.generateAuthToken();
 		return res.header('x-auth', token).send({
 			user,

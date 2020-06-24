@@ -17,6 +17,11 @@ const BusinessSchema = new mongoose.Schema({
 		required: true,
 		trim: true
 	},
+	business_contact: {
+		type: String,
+		required: true,
+		trim: true
+	},
 	business_category: [
 		{
 			category: {
